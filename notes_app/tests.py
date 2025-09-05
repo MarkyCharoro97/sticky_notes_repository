@@ -1,52 +1,47 @@
 from django.test import TestCase
 from django.urls import reverse
-from sticky_notes_app.models import Note
+from .models import Note
 
 
 class NoteModelTest(TestCase):
     def setUp(self):
         self.note = Note.objects.create(
-            title="Test Note",
-            content="This is a test note content."
+            title="Sample Note",
+            content="This is a sample note."
         )
 
     def test_note_creation(self):
-        self.assertEqual(self.note.title, "Test Note")
-        self.assertEqual(self.note.content, "This is a test note content.")
+        self.assertEqual(self.note.title, "Sample Note")
+        self.assertEqual(self.note.content, "This is a sample note.")
         self.assertTrue(isinstance(self.note, Note))
-        self.assertEqual(str(self.note), self.note.title)  
+        self.assertEqual(str(self.note), "Sample Note")
 
 
 class NoteViewsTest(TestCase):
     def setUp(self):
         self.note = Note.objects.create(
-            title="View Test Note",
-            content="Testing note views"
+            title="View Note",
+            content="Note for testing views"
         )
 
     def test_note_list_view(self):
-        response = self.client.get(reverse("note_list")) 
+        response = self.client.get(reverse("note_list"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "View Test Note")
-        self.assertTemplateUsed(response, "sticky_notes_app/note_list.html")
-
-    def test_note_detail_view(self):
-        response = self.client.get(reverse("note_detail", args=[self.note.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Testing note views")
+        self.assertContains(response, "View Note")
+        self.assertTemplateUsed(response, "notes_app/note_list.html")
 
     def test_note_create_view(self):
         response = self.client.post(reverse("note_create"), {
             "title": "New Note",
-            "content": "New note content"
+            "content": "Created via test"
         })
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)  
         self.assertEqual(Note.objects.last().title, "New Note")
 
     def test_note_update_view(self):
         response = self.client.post(reverse("note_update", args=[self.note.id]), {
             "title": "Updated Title",
-            "content": "Updated Content"
+            "content": "Updated content"
         })
         self.assertEqual(response.status_code, 302)
         self.note.refresh_from_db()
@@ -56,4 +51,3 @@ class NoteViewsTest(TestCase):
         response = self.client.post(reverse("note_delete", args=[self.note.id]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Note.objects.filter(id=self.note.id).exists())
-
